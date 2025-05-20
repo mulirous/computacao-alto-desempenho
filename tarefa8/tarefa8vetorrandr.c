@@ -1,0 +1,71 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <sys/time.h>
+#include <math.h>
+
+#define N 10000000 // Número de pontos
+
+void monteCarloPi(long n)
+{
+
+    int *vetorHits; // Vetor que acumula os hits das threads em suas determinadas posições
+    int num_threads = 0;
+    int globalHit = 0;
+
+    double x, y;
+    struct timeval start, end;
+    gettimeofday(&start, NULL);
+
+#pragma omp parallel default(none) private(x, y) shared(globalHit, vetorHits, n, num_threads)
+    {
+#pragma omp single // Faz com que uma thread aloque o vetor
+        {
+            num_threads = omp_get_num_threads();
+            vetorHits = (int *)malloc(sizeof(int) * num_threads);
+
+            for (int i = 0; i < num_threads; i++)
+                vetorHits[i] = 0;
+        }
+
+#pragma omp barrier // Faz com que todas as threads esperem umas as outras para seguir o algoritmo, como se ele estivesse começando agora, pois antes era apenas para a alocação do vetor
+
+        int privateHit = 0;
+
+        int thread_id = omp_get_thread_num();     // -> Para pegar o número (posição no vetor) de cada thread
+        long local_n = n / omp_get_num_threads(); // Divide o trabalho entre as threads
+
+        unsigned int seed = omp_get_thread_num() + 1; // Seed para gerar o número aleatório
+
+        for (long i = 0; i < local_n; i++)
+        {
+            x = (double)rand_r(&seed) / RAND_MAX; // Função para gerar um número aleatório, contudo a função rand() não é thread safe, ou seja, tem o acesso não sincronizado a recursos compartilhados
+            y = (double)rand_r(&seed) / RAND_MAX;
+            if (x * x + y * y <= 1.0)
+                privateHit++;
+        }
+
+        // #pragma omp critical -> A redução irá ser realizada fora da região paralela, em um loop sequencial
+        //         {
+        //             globalHit += privateHit;
+        //         }
+
+        vetorHits[thread_id] = privateHit;
+    }
+
+    for (int i = 0; i < num_threads; i++)
+        globalHit += vetorHits[i];
+
+    gettimeofday(&end, NULL);
+    double pi = 4.0 * globalHit / n;
+    double tempo = (end.tv_sec - start.tv_sec) + (end.tv_usec - start.tv_usec) / 1000000.0;
+    printf("Estimativa de pi: %f\n", pi);
+    printf("Tempo de execução: %f segundos\n", tempo);
+
+    free(vetorHits); // Libera o Vetor Dinâmicamente alocado na memória
+}
+
+int main()
+{
+    monteCarloPi(N);
+    return 0;
+}
