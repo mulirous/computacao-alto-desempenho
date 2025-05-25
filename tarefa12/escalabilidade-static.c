@@ -99,7 +99,7 @@ void navierStokes(int cores_num, int problem_size)
 
     for (int step_num = 0; step_num <= NSTEPS; step_num++)
     {
-#pragma omp parallel for schedule()
+#pragma omp parallel for schedule(static)
         for (int i = 1; i < N - 1; i++)
         {
 #pragma omp simd
@@ -110,7 +110,7 @@ void navierStokes(int cores_num, int problem_size)
             }
         }
 
-#pragma omp parallel for collapse(2) schedule()
+#pragma omp parallel for collapse(2) schedule(static)
         for (int i = 1; i < N - 1; i++)
         {
             for (int j = 1; j < N - 1; j++)
