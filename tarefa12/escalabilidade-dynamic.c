@@ -10,8 +10,8 @@
 #define DT 0.1
 #define VISC 0.1
 
-#define MAX_SIZES 10
-#define MAX_CORES 10
+#define MAX_SIZES 11
+#define MAX_CORES 8
 
 typedef struct
 {
@@ -99,7 +99,7 @@ void navierStokes(int cores_num, int problem_size)
 
     for (int step_num = 0; step_num <= NSTEPS; step_num++)
     {
-#pragma omp parallel for schedule(guided)
+#pragma omp parallel for schedule(dynamic, 2)
         for (int i = 1; i < N - 1; i++)
         {
 #pragma omp simd
@@ -110,7 +110,7 @@ void navierStokes(int cores_num, int problem_size)
             }
         }
 
-#pragma omp parallel for collapse(2) schedule(guided)
+#pragma omp parallel for collapse(2) schedule(dynamic, 2)
         for (int i = 1; i < N - 1; i++)
         {
             for (int j = 1; j < N - 1; j++)
@@ -152,7 +152,9 @@ void navierStokes(int cores_num, int problem_size)
 
 void print_results_table()
 {
-    printf("\n\033[1m%-10s %-7s %-10s %-10s %-12s\033[0m\n", "Problema", "Cores", "Tempo(s)", "Speedup", "Eficiência");
+    printf("\n\n\nESCALABILIDADE COM SCHEDULE DYNAMIC\n\n")
+
+        printf("\n\033[1m%-10s %-7s %-10s %-10s %-12s\033[0m\n", "Problema", "Cores", "Tempo(s)", "Speedup", "Eficiência");
     for (int i = 0; i < result_count; i++)
     {
         const char *color;
