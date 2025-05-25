@@ -10,15 +10,29 @@
 #define DT 0.1
 #define VISC 0.1
 
+#define MAX_SIZES 7
+#define MAX_CORES 8
+
 typedef struct
 {
     int problem_size;
     double T1;
 } T1Record;
 
-#define MAX_SIZES 7
+typedef struct
+{
+    int problem_size;
+    int cores;
+    double time;
+    double speedup;
+    double efficiency;
+} Result;
+
 T1Record T1_table[MAX_SIZES];
 int T1_count = 0;
+
+Result results[MAX_SIZES * MAX_CORES];
+int result_count = 0;
 
 double **alloc_matrix(int N)
 {
@@ -54,6 +68,16 @@ void store_T1(int size, double T1)
     T1_table[T1_count].problem_size = size;
     T1_table[T1_count].T1 = T1;
     T1_count++;
+}
+
+void store_result(int size, int cores, double time, double speedup, double efficiency)
+{
+    results[result_count].problem_size = size;
+    results[result_count].cores = cores;
+    results[result_count].time = time;
+    results[result_count].speedup = speedup;
+    results[result_count].efficiency = efficiency;
+    result_count++;
 }
 
 void navierStokes(int cores_num, int problem_size)
@@ -111,22 +135,44 @@ void navierStokes(int cores_num, int problem_size)
     gettimeofday(&end, NULL);
     double Tp = (end.tv_sec - start.tv_sec) + (end.tv_usec - start.tv_usec) / 1e6;
 
-    if (cores_num == 1) // Verifica se o código é sequencial para armazenar o tempo do código sequencial por tamanho do problema
-    {
+    if (cores_num == 1)
         store_T1(problem_size, Tp);
-    }
 
-    double T1 = get_T1_for_problem_size(problem_size); // Pega o tempo sequencial com base no tamanho do problema para fazer o cálculo da eficiência
-    double speedup = (T1 > 0) ? T1 / Tp : 1.0;         // Calculo SpeedUp
-    double efficiency = speedup / cores_num;           // Calculo Eficiência
+    double T1 = get_T1_for_problem_size(problem_size);
+    double speedup = (T1 > 0) ? T1 / Tp : 1.0;
+    double efficiency = speedup / cores_num;
 
-    printf("\n\n\nProblema: %d | Cores: %d\n", problem_size, cores_num);
-    printf("Tempo: %.3f s | Speedup: %.2f | Eficiência: %.2f%%\n\n\n", Tp, speedup, efficiency * 100);
+    store_result(problem_size, cores_num, Tp, speedup, efficiency);
 
     free_matrix(u, N);
     free_matrix(v, N);
     free_matrix(u_new, N);
     free_matrix(v_new, N);
+}
+
+void print_results_table()
+{
+    printf("\n\033[1m%-10s %-7s %-10s %-10s %-12s\033[0m\n", "Problema", "Cores", "Tempo(s)", "Speedup", "Eficiência");
+    for (int i = 0; i < result_count; i++)
+    {
+        const char *color;
+        double eff_percent = results[i].efficiency * 100;
+        if (eff_percent >= 75.0)
+            color = "\033[1;32m"; // Verde
+        else if (eff_percent >= 50.0)
+            color = "\033[1;33m"; // Amarelo
+        else
+            color = "\033[1;31m"; // Vermelho
+
+        printf("%-10d %-7d %-10.3f %-10.2f %s%-10.2f%%%s\n",
+               results[i].problem_size,
+               results[i].cores,
+               results[i].time,
+               results[i].speedup,
+               color,
+               eff_percent,
+               "\033[0m");
+    }
 }
 
 int main()
@@ -148,7 +194,10 @@ int main()
     gettimeofday(&end, NULL);
     // Tempo total em segundos
     double elapsed = (end.tv_sec - start.tv_sec) + (end.tv_usec - start.tv_usec) / 1e6;
-    printf("\n\n\nVerificação de escalabilidade fianlizada em %.3f segundos.\n\n\n", elapsed);
+
+    print_results_table();
+
+    printf("\n\033[1mVerificação de escalabilidade finalizada em %.3f segundos.\033[0m\n\n", elapsed);
 
     return 0;
 }
