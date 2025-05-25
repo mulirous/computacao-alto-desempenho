@@ -10,7 +10,7 @@
 #define DT 0.1
 #define VISC 0.1
 
-#define MAX_SIZES 7
+#define MAX_SIZES 10
 #define MAX_CORES 8
 
 typedef struct
@@ -180,12 +180,12 @@ int main()
     struct timeval start, end;
 
     int core_nums[] = {1, 2, 4, 8, 16, 32, 64, 128};
-    int problem_sizes[] = {16, 32, 64, 128, 256, 512, 1024};
+    int problem_sizes[] = {16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192};
 
     gettimeofday(&start, NULL);
-    for (int i = 0; i < 8; i++)
+    for (int i = 0; i < MAX_CORES; i++)
     {
-        for (int j = 0; j < 7; j++)
+        for (int j = 0; j < MAX_SIZES; j++)
         {
             navierStokes(core_nums[i], problem_sizes[j]);
         }
