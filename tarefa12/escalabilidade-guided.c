@@ -152,9 +152,9 @@ void navierStokes(int cores_num, int problem_size)
 
 void print_results_table()
 {
-    printf("\n\n\nESCALABILIDADE COM SCHEDULE GUIDED\n\n")
+    printf("\n\n\nESCALABILIDADE COM SCHEDULE GUIDED\n\n");
 
-        printf("\n\033[1m%-10s %-7s %-10s %-10s %-12s\033[0m\n", "Problema", "Cores", "Tempo(s)", "Speedup", "Eficiência");
+    printf("\n\033[1m%-10s %-7s %-10s %-10s %-12s\033[0m\n", "Problema", "Cores", "Tempo(s)", "Speedup", "Eficiência");
     for (int i = 0; i < result_count; i++)
     {
         const char *color;
