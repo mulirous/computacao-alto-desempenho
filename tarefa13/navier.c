@@ -110,7 +110,7 @@ void navierStokes(int cores_num, int problem_size)
             }
         }
 
-#pragma omp parallel for collapse(2) schedule(guided) proc_bind(master)
+#pragma omp parallel for collapse(2) schedule(guided)
         for (int i = 1; i < N - 1; i++)
         {
             for (int j = 1; j < N - 1; j++)
@@ -152,7 +152,8 @@ void navierStokes(int cores_num, int problem_size)
 
 void print_results_table()
 {
-    printf("\n\n\nESCALABILIDADE COM SCHEDULE GUIDED\n\n");
+    char *affinity = getenv("OMP_PROC_BIND");
+    printf("Afinidade usada: %s\n", affinity ? affinity : "N/A");
 
     printf("\n\033[1m%-10s %-7s %-10s %-10s %-12s\033[0m\n", "Problema", "Cores", "Tempo(s)", "Speedup", "Eficiência");
     for (int i = 0; i < result_count; i++)
