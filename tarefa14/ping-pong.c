@@ -28,28 +28,37 @@ int main(int argc, char **argv)
         int tamanho = tamanhos[t];
         char *buffer = malloc(tamanho);
 
-        if (rank == 0)
-        {
-            memset(buffer, 'A', tamanho); // preencher a mensagem com algo
-            double start = MPI_Wtime();
+        double start = MPI_Wtime();
 
-            for (int i = 0; i < repeticoes; i++)
+        for (int i = 0; i < repeticoes; i++)
+        {
+            if (rank == 0)
             {
+                memset(buffer, 'A', tamanho); // preencher a mensagem com algo
+
                 MPI_Send(buffer, tamanho, MPI_CHAR, 1, 0, MPI_COMM_WORLD);
                 MPI_Recv(buffer, tamanho, MPI_CHAR, 1, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
             }
-
-            double end = MPI_Wtime();
-            printf("Tamanho: %7d bytes | Tempo total: %.6f s | Média: %.6f ms\n",
-                   tamanho, end - start, 1000 * (end - start) / repeticoes);
-        }
-        else if (rank == 1)
-        {
-            for (int i = 0; i < repeticoes; i++)
+            else if (rank == 1)
             {
+
                 MPI_Recv(buffer, tamanho, MPI_CHAR, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
                 MPI_Send(buffer, tamanho, MPI_CHAR, 0, 0, MPI_COMM_WORLD);
             }
+        }
+
+        double end = MPI_Wtime();
+
+        if (rank == 0)
+        {
+            double total_time = (end - start);
+
+            double average_go_and_back = total_time / repeticoes;
+
+            double band_width_bytes_per_second = (2.0 * tamanho) / average_go_and_back / (1024 * 1024);
+
+            printf("Tamanho: %7d bytes | Tempo total: %.6f s | Média: %.6f ms | Largura de Banda: %.4f\n",
+                   tamanho, total_time, average_go_and_back, band_width_bytes_per_second);
         }
 
         free(buffer);
