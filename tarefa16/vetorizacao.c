@@ -60,7 +60,7 @@ void run_test(int M, int N, int rank, int size)
         }
 
         // A soma deve ser igual ao quadrado de N multiplicado por 2
-        printf("M=%d N=%d Tempo=%.6f s | Soma total = %.0f\n", M, N, end - start, soma);
+        printf("M=%4d N=%4d Tempo=%.6f s | Soma total = %.0f\n", M, N, end - start, soma);
         free(A);
         free(y);
     }
