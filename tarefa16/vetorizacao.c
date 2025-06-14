@@ -79,7 +79,7 @@ int main(int argc, char **argv)
     MPI_Comm_size(MPI_COMM_WORLD, &size);
 
     // Testes para diferentes valores de N (assumindo M = N para simplificar)
-    int Ns[] = {2, 4, 8, 16, 32};
+    int Ns[] = {2, 4, 8, 16, 32, 64, 128, 256, 512};
     for (int i = 0; i < sizeof(Ns) / sizeof(Ns[0]); i++)
     {
         int N = Ns[i];
