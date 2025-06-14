@@ -23,6 +23,9 @@ void run_test(int M, int N, int rank, int size)
             x[i] = 2.0;
     }
 
+    // Início do cronômetro
+    double start = MPI_Wtime();
+
     // Broadcast do vetor x
     MPI_Bcast(x, N, MPI_DOUBLE, 0, MPI_COMM_WORLD);
 
@@ -30,9 +33,6 @@ void run_test(int M, int N, int rank, int size)
     MPI_Scatter(A, linhas_por_proc * N, MPI_DOUBLE,
                 local_A, linhas_por_proc * N, MPI_DOUBLE,
                 0, MPI_COMM_WORLD);
-
-    // Início do cronômetro
-    double start = MPI_Wtime();
 
     // Produto local
     for (int i = 0; i < linhas_por_proc; i++)
