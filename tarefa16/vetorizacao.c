@@ -23,6 +23,8 @@ void run_test(int M, int N, int rank, int size)
             x[i] = 2.0;
     }
 
+    MPI_Barrier(MPI_COMM_WORLD);
+
     // Início do cronômetro
     double start = MPI_Wtime();
 
@@ -48,6 +50,8 @@ void run_test(int M, int N, int rank, int size)
     MPI_Gather(local_y, linhas_por_proc, MPI_DOUBLE,
                y, linhas_por_proc, MPI_DOUBLE,
                0, MPI_COMM_WORLD);
+
+    MPI_Barrier(MPI_COMM_WORLD);
 
     double end = MPI_Wtime();
 
