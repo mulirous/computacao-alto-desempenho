@@ -27,6 +27,7 @@ int main(int argc, char **argv)
         for (int i = 1; i < local_n - 1; i++)
             anterior[i] = 100.0; // Calor no início da barra
 
+    MPI_Barrier(MPI_COMM_WORLD);
     double start = MPI_WTime();
 
     for (int t = 0; t < T; t++)
@@ -64,16 +65,23 @@ int main(int argc, char **argv)
             atual[local_n - 2] = anterior[local_n - 2] + ALPHA * (anterior[local_n - 3] - 2 * anterior[local_n - 2] + anterior[local_n - 1]);
         }
 
+        if (t % 100 == 0)
+        {
+            printf("Rank %d - Iteração %d - Temp. centro local: %.2f\n", rank, t, previous[local_n / 2]);
+        }
+
         double *tmp = anterior;
         anterior = atual;
         atual = tmp;
     }
 
-    double end = MPI_WTime();
+    MPI_Barrier(MPI_COMM_WORLD);
+    double end = MPI_Wtime();
 
-    double tempo = (end - start) / 1000;
+    printf("Rank %d finalizou em %.6f segundos\n", rank, end - start);
 
-    printf("O processo durou cerca de %.3f segundos", tempo);
+    free(current);
+    free(previous);
 
     MPI_Finalize();
     return 0;
