@@ -26,8 +26,13 @@ int main()
         c[i] = a[i] + b[i];
     }
 
-    double t1 = omp_get_wtime();
-// test results
+    double t2 = omp_get_wtime();
+
+    printf("\n\nCPU compute time: %f\n\n", t2 - t1);
+    // test results
+
+    double t3 = omp_get_wtime();
+
 #pragma omp parallel for reduction(+ : err)
     for (int i = 0; i < N; i++)
     {
@@ -36,6 +41,11 @@ int main()
         if (val > TOL)
             err++;
     }
+
+    double t4 = omp_get_wtime();
+
+    printf("\nCPU testing time: %df\n", t4 - t3);
+
     printf("vectors added with %d errors\n", err);
     return 0;
 }
