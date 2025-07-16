@@ -130,6 +130,7 @@ int main(int argc, char *argv[])
     //
 
     // Start the solve timer
+#pragma omp target data map(to : u[0 : n * n], u_tmp[0 : n * n]) map(from : u[0 : n * n])
     double tic = omp_get_wtime();
     for (int t = 0; t < nsteps; ++t)
     {
@@ -206,7 +207,7 @@ void solve(const int n, const double alpha, const double dx, const double dt, co
     const double r2 = 1.0 - 4.0 * r;
 
 // loop que guarda o resultado do passo de tempo em u_tmp
-#pragma omp target data map(tofrom : u[0 : n * n], u_tmp[0 : n * n])
+#pragma omp target
 #pragma omp loop collapse(2) // colapstar para se tornar um loop só e o target para a GPU
     for (int i = 0; i < n; ++i)
     {
