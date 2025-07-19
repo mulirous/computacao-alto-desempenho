@@ -43,7 +43,7 @@ static inline int map_2d_to_1d(int i, int j, int cols)
 }
 
 // Função para inicializar os dados (condição inicial u(x,y,0) = sin(pi*x/Lx)*sin(pi*y/Ly))
-void initialize_data(double *local_u, int local_rows, int row_offset, double dx, double dy)
+void initialize_data(double *local_u, int local_rows, int row_offset, double dx, double dy, int n_global_x)
 {
     // Array incluindo células fantasmas: [linha_fantasma_superior][linhas_locais][linha_fantasma_inferior]
     // Cada linha tem n_global_x pontos
@@ -216,7 +216,7 @@ int main(int argc, char *argv[])
         {
             printf("\n Uso de %s <tamanho_da_chapa>\n", argv[0]);
         }
-        MPI_Finnalize();
+        MPI_Finalize();
         exit(1);
     }
     n_global_x = n_global_y = atoi(argv[1]);
@@ -276,7 +276,7 @@ int main(int argc, char *argv[])
 
     double time_start, time_end, exec_time;
 
-    initialize_data(u_curr, local_rows, row_offset, dx, dy);
+    initialize_data(u_curr, local_rows, row_offset, dx, dy, n_global_x);
     MPI_Barrier(MPI_COMM_WORLD);
     time_start = MPI_Wtime();
 
