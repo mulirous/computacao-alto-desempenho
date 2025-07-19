@@ -130,44 +130,42 @@ int main(int argc, char *argv[])
     //
 
     // Start the solve timer
-#pragma omp target data map(to : u[0 : n * n], u_tmp[0 : n * n]) map(from : u[0 : n * n])
+
+    double tic = omp_get_wtime();
+    for (int t = 0; t < nsteps; ++t)
     {
-        double tic = omp_get_wtime();
-        for (int t = 0; t < nsteps; ++t)
-        {
 
-            // Call the solve kernel
-            // Computes u_tmp at the next timestep
-            // given the value of u at the current timestep
-            solve(n, alpha, dx, dt, u, u_tmp);
+        // Call the solve kernel
+        // Computes u_tmp at the next timestep
+        // given the value of u at the current timestep
+        solve(n, alpha, dx, dt, u, u_tmp);
 
-            // Pointer swap
-            tmp = u;
-            u = u_tmp;
-            u_tmp = tmp;
-        }
-        // Stop solve timer
-        double toc = omp_get_wtime();
-
-        // Check the L2-norm of the computed solution
-        // against the *known* solution from the MMS scheme
-        //
-        double norm = l2norm(n, u, nsteps, dt, alpha, dx, length);
-
-        // Stop total timer
-        double stop = omp_get_wtime();
-
-        // Print results
-        printf("Results\n\n");
-        printf("Error (L2norm): %E\n", norm);
-        printf("Solve time (s): %lf\n", toc - tic);
-        printf("Total time (s): %lf\n", stop - start);
-        printf(LINE);
-
-        // Free the memory
-        free(u);
-        free(u_tmp);
+        // Pointer swap
+        tmp = u;
+        u = u_tmp;
+        u_tmp = tmp;
     }
+    // Stop solve timer
+    double toc = omp_get_wtime();
+
+    // Check the L2-norm of the computed solution
+    // against the *known* solution from the MMS scheme
+    //
+    double norm = l2norm(n, u, nsteps, dt, alpha, dx, length);
+
+    // Stop total timer
+    double stop = omp_get_wtime();
+
+    // Print results
+    printf("Results\n\n");
+    printf("Error (L2norm): %E\n", norm);
+    printf("Solve time (s): %lf\n", toc - tic);
+    printf("Total time (s): %lf\n", stop - start);
+    printf(LINE);
+
+    // Free the memory
+    free(u);
+    free(u_tmp);
 }
 
 // Sets the mesh to an initial value, determined by the MMS scheme
@@ -209,7 +207,7 @@ void solve(const int n, const double alpha, const double dx, const double dt, co
     const double r2 = 1.0 - 4.0 * r;
 
 // loop que guarda o resultado do passo de tempo em u_tmp
-#pragma omp target
+#pragma omp target map(to : u[0 : n * n]) map(from : u_tmp[0 : n * n])
 #pragma omp loop collapse(2) // colapstar para se tornar um loop só e o target para a GPU
     for (int i = 0; i < n; ++i)
     {
