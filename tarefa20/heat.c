@@ -49,8 +49,8 @@ double l2norm(const int n, const double *restrict u, const int nsteps, const dou
 // Main function
 int main(int argc, char *argv[])
 {
-    printf("Number of devices: %d\n", omp_get_num_devices());
 
+    printf("Number of devices: %d\n", omp_get_num_devices());
     // Start the total program runtime timer
     double start = omp_get_wtime();
 
@@ -126,11 +126,13 @@ int main(int argc, char *argv[])
     zero(n, u_tmp);
 
     //
-    // Run through timesteps under the explicit scheme
+    // Run through stimesteps under the explicit scheme
     //
 
     // Start the solve timer
+
     double tic = omp_get_wtime();
+#pragma omp target data enter map(to : u[0 : n], u_tmp[0 : n0])
     for (int t = 0; t < nsteps; ++t)
     {
 
@@ -144,10 +146,9 @@ int main(int argc, char *argv[])
         u = u_tmp;
         u_tmp = tmp;
     }
+#pragma omp target data exit map(from : u[0 : n])
     // Stop solve timer
     double toc = omp_get_wtime();
-
-#pragma omp target exit data map(from : u[0 : n * n])
 
     // Check the L2-norm of the computed solution
     // against the *known* solution from the MMS scheme
@@ -184,7 +185,6 @@ void initial_value(const int n, const double dx, const double length, double *re
         }
         y += dx; // Physical y position
     }
-#pragma omp target enter data map(to : u[0 : n * n]) // Envia u para a GPU
 }
 
 // Zero the array u
@@ -198,7 +198,6 @@ void zero(const int n, double *restrict u)
             u[i + j * n] = 0.0;
         }
     }
-#pragma omp target enter data map(to : u[0 : n * n]) // Envia u para a GPU
 }
 
 // Compute the next timestep, given the current timestep
@@ -209,13 +208,15 @@ void solve(const int n, const double alpha, const double dx, const double dt, co
     const double r = alpha * dt / (dx * dx);
     const double r2 = 1.0 - 4.0 * r;
 
-// Inverti j e i para o acesso à memória ser contíguo
+// loop que guarda o resultado do passo de tempo em u_tmp
 #pragma omp target
-#pragma omp loop collapse(2)
-    for (int j = 0; j < n; ++j)
+#pragma omp loop collapse(2) // colapstar para se tornar um loop só e o target para a GPU
+    for (int i = 0; i < n; ++i)
     {
-        for (int i = 0; i < n; ++i)
+        for (int j = 0; j < n; ++j)
         {
+            // Update the 5-point stencil, using boundary conditions on the edges of the domain.
+            // Boundaries are zero because the MMS solution is zero there.
             u_tmp[i + j * n] = r2 * u[i + j * n] +
                                r * ((i < n - 1) ? u[i + 1 + j * n] : 0.0) +
                                r * ((i > 0) ? u[i - 1 + j * n] : 0.0) +
