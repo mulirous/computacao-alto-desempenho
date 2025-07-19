@@ -126,7 +126,7 @@ int main(int argc, char *argv[])
     zero(n, u_tmp);
 
     //
-    // Run through timesteps under the explicit scheme
+    // Run through stimesteps under the explicit scheme
     //
 
     // Start the solve timer
