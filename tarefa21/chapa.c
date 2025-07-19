@@ -20,7 +20,7 @@
 #define TAG_DATA_GOES_DOWN 1 // Mensagem vai para processo abaixo
 
 // Função para calcular os parâmetros locais de cada processo (divisão de linhas)
-void calculate_local_params(int rank, int mpi_size, int *local_rows_ptr, int *row_offset_ptr)
+void calculate_local_params(int rank, int mpi_size, int *local_rows_ptr, int *row_offset_ptr, int n_global_y, int n_global_x)
 {
     int base_chunk = n_global_y / mpi_size;
     int remainder = n_global_y % mpi_size;
@@ -68,7 +68,7 @@ void initialize_data(double *local_u, int local_rows, int row_offset, double dx,
 }
 
 // Versão com MPI_Isend/MPI_Irecv e MPI_Wait para matriz 2D
-void run_simulation_2d_heat(double *u_curr, double *u_next, int local_rows, int rank, int mpi_size, int num_steps, double factor_x, double factor_y)
+void run_simulation_2d_heat(double *u_curr, double *u_next, int local_rows, int rank, int mpi_size, int num_steps, double factor_x, double factor_y, int n_global_y, int n_global_x)
 {
     MPI_Request requests[4]; // 2 envios e 2 recebimentos por processo
     int num_reqs;
@@ -216,8 +216,8 @@ int main(int argc, char *argv[])
         {
             printf("\n Uso de %s <tamanho_da_chapa>\n", argv[0]);
         }
-        MPI_Finnalize()
-            exit(1)
+        MPI_Finnalize();
+        exit(1);
     }
     n_global_x = n_global_y = atoi(argv[1]);
 
@@ -233,7 +233,7 @@ int main(int argc, char *argv[])
     }
 
     int local_rows, row_offset;
-    calculate_local_params(rank, mpi_size, &local_rows, &row_offset);
+    calculate_local_params(rank, mpi_size, &local_rows, &row_offset, n_global_y, n_global_x);
 
     if (local_rows == 0)
     {
@@ -280,7 +280,7 @@ int main(int argc, char *argv[])
     MPI_Barrier(MPI_COMM_WORLD);
     time_start = MPI_Wtime();
 
-    run_simulation_2d_heat(u_curr, u_next, local_rows, rank, mpi_size, num_steps, factor_x, factor_y);
+    run_simulation_2d_heat(u_curr, u_next, local_rows, rank, mpi_size, num_steps, factor_x, factor_y, n_global_y, n_global_x);
 
     MPI_Barrier(MPI_COMM_WORLD);
     time_end = MPI_Wtime();
