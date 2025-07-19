@@ -132,7 +132,7 @@ int main(int argc, char *argv[])
     // Start the solve timer
 
     double tic = omp_get_wtime();
-#pragma omp target data enter map(to : u[0 : n], u_tmp[0 : n0])
+#pragma omp target enter data map(to : u[0 : n], u_tmp[0 : n])
     for (int t = 0; t < nsteps; ++t)
     {
 
@@ -146,7 +146,7 @@ int main(int argc, char *argv[])
         u = u_tmp;
         u_tmp = tmp;
     }
-#pragma omp target data exit map(from : u[0 : n])
+#pragma omp target exit data map(from : u[0 : n])
     // Stop solve timer
     double toc = omp_get_wtime();
 
