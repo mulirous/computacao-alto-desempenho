@@ -183,7 +183,7 @@ int main()
     struct timeval start, end;
 
     int core_nums[] = {1, 2, 4, 8, 16, 32, 64, 128};
-    int problem_sizes[] = {1, 2, 4, 8, 16, 32, 64, 128};
+    int problem_sizes[] = {128, 512, 1024, 2048, 4096};
 
     gettimeofday(&start, NULL);
     for (int i = 0; i < MAX_CORES; i++)
