@@ -10,7 +10,7 @@
 
 __global__ void navier_cuda(double *u_new, double *u, int N) {
     // Bloco 16x16: shared memory precisa de 18x18 (com borda)
-    __shared__ double s_u[18][18];
+    __shared__ double s_u[34][34];
 
     int i = blockIdx.y * blockDim.y + threadIdx.y; // linha global
     int j = blockIdx.x * blockDim.x + threadIdx.x; // coluna global
@@ -31,6 +31,7 @@ __global__ void navier_cuda(double *u_new, double *u, int N) {
     if (threadIdx.x == blockDim.x-1 && j < N-1) // direita
         s_u[li][blockDim.x+1] = u[i*N + (j+1)];
 
+    // preenchimento nas quinas/bordas da matriz da memória compartilhada
     // Superior esquerdo
     if (threadIdx.x==0 && threadIdx.y==0 && i>0 && j>0)
         s_u[0][0] = u[(i-1)*N + (j-1)];
@@ -76,8 +77,8 @@ int main(int argc, char **argv) {
     cudaMalloc(&d_u_new, size);
     cudaMemcpy(d_u, h_u, size, cudaMemcpyHostToDevice);
 
-    dim3 block(16, 16);
-    dim3 grid((N+15)/16, (N+15)/16);
+    dim3 block(32, 32);
+    dim3 grid((N + 31) / 32, (N + 31) / 32);
 
     cudaEvent_t start, stop;
     cudaEventCreate(&start);

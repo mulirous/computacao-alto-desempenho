@@ -28,7 +28,7 @@ int main(int argc, char **argv) {
     }
     int N = atoi(argv[1]);
 
-    
+
     size_t size = N * N * sizeof(double);
 
     double *h_u = (double *)calloc(N * N, sizeof(double));
@@ -40,8 +40,8 @@ int main(int argc, char **argv) {
     cudaMalloc(&d_u_new, size);
     cudaMemcpy(d_u, h_u, size, cudaMemcpyHostToDevice);
 
-    dim3 block(16, 16);
-    dim3 grid((N + 15) / 16, (N + 15) / 16);
+    dim3 block(32, 32);
+    dim3 grid((N + 31) / 32, (N + 31) / 32);
 
     cudaEvent_t start, stop;
     cudaEventCreate(&start);
