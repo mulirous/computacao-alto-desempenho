@@ -31,10 +31,18 @@ __global__ void navier_cuda(double *u_new, double *u, int N) {
     if (threadIdx.x == blockDim.x-1 && j < N-1) // direita
         s_u[li][blockDim.x+1] = u[i*N + (j+1)];
 
-    // Canto superior esquerdo
+    // Superior esquerdo
     if (threadIdx.x==0 && threadIdx.y==0 && i>0 && j>0)
         s_u[0][0] = u[(i-1)*N + (j-1)];
-    // ... (faça para todos os 4 cantos, se quiser)
+    // Superior direito
+    if (threadIdx.x==blockDim.x-1 && threadIdx.y==0 && i>0 && j<N-1)
+        s_u[0][blockDim.x+1] = u[(i-1)*N + (j+1)];
+    // Inferior esquerdo
+    if (threadIdx.x==0 && threadIdx.y==blockDim.y-1 && i<N-1 && j>0)
+        s_u[blockDim.y+1][0] = u[(i+1)*N + (j-1)];
+    // Inferior direito
+    if (threadIdx.x==blockDim.x-1 && threadIdx.y==blockDim.y-1 && i<N-1 && j<N-1)
+        s_u[blockDim.y+1][blockDim.x+1] = u[(i+1)*N + (j+1)];
 
     // 3. Sincronizar todas as threads do bloco
     __syncthreads();

@@ -25,3 +25,9 @@ nsys ./executavel
 ```shell
 nsys stats nsys-[arquivo].nsys-rep
 ```
+
+## Visualização do seu job no NPAD
+
+```shell
+squeue -u $USER
+```
