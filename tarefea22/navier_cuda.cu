@@ -21,7 +21,7 @@ __global__ void navier_cuda(double *u_new, double *u, int N) {
 }
 
 int main() {
-    int sizes[] = {8, 16, 32, 64, 128, 256, 512}; // Pode expandir!
+    int sizes[] = {128, 512, 1024, 2048, 4096}; // Pode expandir!
     int nsizes = sizeof(sizes)/sizeof(int);
 
     for (int s = 0; s < nsizes; ++s) {
