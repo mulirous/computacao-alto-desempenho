@@ -10,7 +10,7 @@
 #define DT 0.1
 #define VISC 0.1
 
-#define MAX_SIZES 8
+#define MAX_SIZES 5
 #define MAX_CORES 8
 
 typedef struct
